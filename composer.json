@@ -3,7 +3,7 @@
     "description": "PHPDI plugin for Padawan.php",
     "license": "MIT",
     "autoload": {
-        "psr-4":{"Mkusher\\PadawanDi":""}
+        "psr-4":{"Mkusher\\PadawanDi\\":""}
     },
     "authors": [
         {
