@@ -4,60 +4,49 @@ namespace Mkusher\PadawanDi;
 
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Complete\Resolver\NodeTypeResolver;
-use Complete\Resolver\TypeResolveEvent;
-use Entity\FQCN;
-use PhpParser\Node\Arg;
-use PhpParser\Node\Scalar\String_;
+use Complete\Completer\CompleterFactory;
 use Parser\UseParser;
 
 class Plugin
 {
     public function __construct(
         EventDispatcher $dispatcher,
-        UseParser $useParser
+        TypeResolver $resolver,
+        Completer $completer
     ) {
         $this->dispatcher = $dispatcher;
-        $this->useParser = $useParser;
+        $this->resolver = $resolver;
+        $this->completer = $completer;
     }
 
-    public function load()
+    public function init()
     {
-        if ($this->isLoaded) {
-            return;
-        }
-        $this->isLoaded = true;
-        $plugin = $this;
         $this->dispatcher->addListener(
             NodeTypeResolver::BLOCK_START,
-            function (TypeResolveEvent $e) use ($plugin) {
-                $plugin->parentType = $e->getType();
-            }
+            [$this->resolver, 'handleParentTypeEvent']
         );
         $this->dispatcher->addListener(
             NodeTypeResolver::BLOCK_END,
-            function (TypeResolveEvent $e) use ($plugin) {
-                $parentType = $plugin->parentType;
-                if ($parentType instanceof FQCN
-                    && $parentType->toString() === 'DI\\Container'
-                ) {
-                    /** @var \Entity\Chain\MethodCall */
-                    $chain = $e->getChain();
-                    if ($chain->getType() === 'method' && count($chain->getArgs()) > 0) {
-                        $firstArg = array_pop($chain->getArgs())->value;
-                        if ($firstArg instanceof String_) {
-                            $className = $firstArg->value;
-                            $fqcn = $plugin->useParser->parseFQCN($className);
-                            $e->setType($fqcn);
-                        }
-                    }
-                }
-            }
+            [$this->resolver, 'handleTypeResolveEvent']
+        );
+        $this->dispatcher->addListener(
+            CompleterFactory::CUSTOM_COMPLETER,
+            [$this, 'handleCompleteEvent']
         );
     }
 
-    private $parentType;
+    public function handleCompleteEvent($e)
+    {
+        $context = $e->context;
+        if ($context->isMethodCall()) {
+            $e->completer = $this->completer;
+        }
+    }
+
+    /** @var Completer */
+    private $completer;
+    /** @var TypeResolver */
+    private $resolver;
     /** @var EventDispatcher */
     private $dispatcher;
-    private $useParser;
-    private $isLoaded = false;
 }
