@@ -1,0 +1,15 @@
+{
+    "name": "mkusher/padawan-di",
+    "description": "PHPDI plugin for Padawan.php",
+    "license": "MIT",
+    "autoload": {
+        "psr-4":{"Mkusher\\PadawanDi":""}
+    },
+    "authors": [
+        {
+            "name": "Aleh Kashnikau",
+            "email": "aleh.kashnikau@gmail.com"
+        }
+    ],
+    "require": {}
+}
