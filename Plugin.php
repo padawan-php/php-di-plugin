@@ -4,8 +4,9 @@ namespace Mkusher\PadawanDi;
 
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Complete\Resolver\NodeTypeResolver;
-use Complete\Completer\CompleterFactory;
+use Complete\CompleteEngine;
 use Parser\UseParser;
+use Entity\FQCN;
 
 class Plugin
 {
@@ -30,7 +31,7 @@ class Plugin
             [$this->resolver, 'handleTypeResolveEvent']
         );
         $this->dispatcher->addListener(
-            CompleterFactory::CUSTOM_COMPLETER,
+            CompleteEngine::CUSTOM_COMPLETER,
             [$this, 'handleCompleteEvent']
         );
     }
@@ -39,7 +40,14 @@ class Plugin
     {
         $context = $e->context;
         if ($context->isMethodCall()) {
-            $e->completer = $this->completer;
+            list($type, $isThis, $types, $workingNode) = $context->getData();
+            $fqcn = array_pop($types);
+            if ($fqcn instanceof FQCN
+                && $fqcn->toString() === 'DI\\Container'
+                && $workingNode->name === 'get'
+            ) {
+                $e->completer = $this->completer;
+            }
         }
     }
 

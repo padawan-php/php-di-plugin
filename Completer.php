@@ -17,19 +17,10 @@ class Completer implements CompleterInterface
     }
     public function getEntries(Project $project, Context $context)
     {
-        list($type, $isThis, $types) = $context->getData();
-        if (is_array($types)) {
-            $fqcn = array_pop($types);
-            if ($fqcn instanceof FQCN
-                && $fqcn->toString() === 'DI\\Container'
-            ) {
-                return array_map(
-                    [$this, 'wrapEntry'],
-                    $this->classNameCompleter->getEntries($project, $context)
-                );
-            }
-        }
-        return [];
+        return array_map(
+            [$this, 'wrapEntry'],
+            $this->classNameCompleter->getEntries($project, $context)
+        );
     }
 
     public function wrapEntry($entry)
