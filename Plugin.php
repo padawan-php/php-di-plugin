@@ -4,7 +4,7 @@ namespace Mkusher\PadawanDi;
 
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Complete\Resolver\NodeTypeResolver;
-use Complete\CompleteEngine;
+use Complete\Completer\CompleterFactory;
 use Parser\UseParser;
 use Entity\FQCN;
 
@@ -31,7 +31,7 @@ class Plugin
             [$this->resolver, 'handleTypeResolveEvent']
         );
         $this->dispatcher->addListener(
-            CompleteEngine::CUSTOM_COMPLETER,
+            CompleterFactory::CUSTOM_COMPLETER,
             [$this, 'handleCompleteEvent']
         );
     }
